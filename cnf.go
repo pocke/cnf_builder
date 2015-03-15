@@ -121,7 +121,7 @@ func (b *Builder) Build() string {
 			if !v.b {
 				res = append(res, '-')
 			}
-			res = append(res, strconv.Itoa(v.id)...)
+			res = strconv.AppendInt(res, int64(v.id), 10)
 			res = append(res, ' ')
 		}
 		res = append(res, "0\n"...)
