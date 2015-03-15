@@ -1,6 +1,12 @@
 package cnf_builder
 
-import "fmt"
+import (
+	"bufio"
+	"fmt"
+	"io"
+	"strconv"
+	"strings"
+)
 
 // ----------- Var
 type Var struct {
@@ -26,6 +32,71 @@ func New() *Builder {
 		vars:    make([]*Var, 0),
 		clauses: make([][]*Var, 0),
 	}
+}
+
+func Import(cnf io.Reader) (*Builder, error) {
+	sc := bufio.NewScanner(cnf)
+	for {
+		ok := sc.Scan()
+		if !ok {
+			return nil, fmt.Errorf("Unexpected EOF")
+		}
+		line := sc.Text()
+		if !strings.HasPrefix(line, "c") {
+			break
+		}
+	}
+	pcnf := sc.Text()
+
+	pcnfs := strings.Split(pcnf, " ")
+	if pcnfs[0] != "p" || pcnfs[1] != "cnf" {
+		return nil, fmt.Errorf("Expected \"p cnf nbvar nbclauses\", but got %s", pcnf)
+	}
+	nbvar, err := strconv.Atoi(pcnfs[2])
+	if err != nil {
+		return nil, err
+	}
+	nbclauses, err := strconv.Atoi(pcnfs[3])
+	if err != nil {
+		return nil, err
+	}
+
+	b := &Builder{
+		vars:    make([]*Var, 0, nbvar),
+		clauses: make([][]*Var, 0, nbclauses),
+	}
+	for i := 0; i < nbvar; i++ {
+		b.NewVar()
+	}
+
+	for i := 0; i < nbclauses; i++ {
+		ok := sc.Scan()
+		if !ok {
+			return nil, fmt.Errorf("Unexpected EOF")
+		}
+		line := strings.Split(sc.Text(), " ")
+		if last := line[len(line)-1]; last != "0" {
+			return nil, fmt.Errorf("Last of clauses line should be 0, but got %s", last)
+		}
+		cs := make([]*Var, 0, len(line)-1)
+		for _, s := range line[:len(line)-1] {
+			n, err := strconv.Atoi(s)
+			if err != nil {
+				return nil, err
+			}
+			if Abs(n) > nbvar {
+				return nil, fmt.Errorf("Invalid as CNF")
+			}
+			v := b.vars[Abs(n)-1]
+			if n < 0 {
+				v = v.Not()
+			}
+			cs = append(cs, v)
+		}
+		b.AddClause(cs...)
+	}
+
+	return b, nil
 }
 
 func (b *Builder) NewVar() *Var {
@@ -54,4 +125,11 @@ func (b *Builder) Build() string {
 		res += "0\n"
 	}
 	return res
+}
+
+func Abs(i int) int {
+	if i < 0 {
+		return -i
+	}
+	return i
 }
