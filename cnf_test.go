@@ -77,6 +77,15 @@ func TestImport(t *testing.T) {
 	shouldBeError(`p hoge 2 2
 1 2 0
 -1 -2 0`)
+	shouldBeError(`p cnf 2 2
+1 c 0
+-1 -2 0`)
+	shouldBeError(`p cnf a 2
+1 2 0
+-1 -2 0`)
+	shouldBeError(`p cnf 2 b
+1 2 0
+-1 -2 0`)
 	shouldBeSuccess(`p cnf 2 2
 1 2 0
 -1 -2 0`)
