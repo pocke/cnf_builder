@@ -84,10 +84,10 @@ func Import(cnf io.Reader) (*Builder, error) {
 			if err != nil {
 				return nil, err
 			}
-			if Abs(n) > nbvar {
+			if abs(n) > nbvar {
 				return nil, fmt.Errorf("Invalid as CNF")
 			}
-			v := b.vars[Abs(n)-1]
+			v := b.vars[abs(n)-1]
 			if n < 0 {
 				v = v.Not()
 			}
@@ -127,7 +127,7 @@ func (b *Builder) Build() string {
 	return res
 }
 
-func Abs(i int) int {
+func abs(i int) int {
 	if i < 0 {
 		return -i
 	}
