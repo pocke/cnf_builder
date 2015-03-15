@@ -114,17 +114,19 @@ func (b *Builder) AddClause(c ...*Var) {
 }
 
 func (b *Builder) Build() string {
-	res := fmt.Sprintf("p cnf %d %d\n", len(b.vars), len(b.clauses))
+	res := make([]byte, 0, 15+16*len(b.clauses))
+	res = append(res, fmt.Sprintf("p cnf %d %d\n", len(b.vars), len(b.clauses))...)
 	for _, c := range b.clauses {
 		for _, v := range c {
 			if !v.b {
-				res += "-"
+				res = append(res, '-')
 			}
-			res += fmt.Sprintf("%d ", v.id)
+			res = append(res, strconv.Itoa(v.id)...)
+			res = append(res, ' ')
 		}
-		res += "0\n"
+		res = append(res, "0\n"...)
 	}
-	return res
+	return string(res)
 }
 
 func abs(i int) int {
