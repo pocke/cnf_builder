@@ -10,27 +10,27 @@ import (
 
 // ----------- Var
 type Var struct {
-	id int
-	b  bool
+	ID int
+	B  bool
 }
 
 func (v *Var) Not() *Var {
 	return &Var{
-		id: v.id,
-		b:  !v.b,
+		ID: v.ID,
+		B:  !v.B,
 	}
 }
 
 // --------------- Builder
 type Builder struct {
-	vars    []*Var
-	clauses [][]*Var
+	Vars    []*Var
+	Clauses [][]*Var
 }
 
 func New() *Builder {
 	return &Builder{
-		vars:    make([]*Var, 0),
-		clauses: make([][]*Var, 0),
+		Vars:    make([]*Var, 0),
+		Clauses: make([][]*Var, 0),
 	}
 }
 
@@ -62,8 +62,8 @@ func Import(cnf io.Reader) (*Builder, error) {
 	}
 
 	b := &Builder{
-		vars:    make([]*Var, 0, nbvar),
-		clauses: make([][]*Var, 0, nbclauses),
+		Vars:    make([]*Var, 0, nbvar),
+		Clauses: make([][]*Var, 0, nbclauses),
 	}
 	for i := 0; i < nbvar; i++ {
 		b.NewVar()
@@ -87,7 +87,7 @@ func Import(cnf io.Reader) (*Builder, error) {
 			if abs(n) > nbvar {
 				return nil, fmt.Errorf("Invalid as CNF")
 			}
-			v := b.vars[abs(n)-1]
+			v := b.Vars[abs(n)-1]
 			if n < 0 {
 				v = v.Not()
 			}
@@ -101,27 +101,27 @@ func Import(cnf io.Reader) (*Builder, error) {
 
 func (b *Builder) NewVar() *Var {
 	v := &Var{
-		id: len(b.vars) + 1,
-		b:  true,
+		ID: len(b.Vars) + 1,
+		B:  true,
 	}
 
-	b.vars = append(b.vars, v)
+	b.Vars = append(b.Vars, v)
 	return v
 }
 
 func (b *Builder) AddClause(c ...*Var) {
-	b.clauses = append(b.clauses, c)
+	b.Clauses = append(b.Clauses, c)
 }
 
 func (b *Builder) Build() string {
-	res := make([]byte, 0, 15+16*len(b.clauses))
-	res = append(res, fmt.Sprintf("p cnf %d %d\n", len(b.vars), len(b.clauses))...)
-	for _, c := range b.clauses {
+	res := make([]byte, 0, 15+16*len(b.Clauses))
+	res = append(res, fmt.Sprintf("p cnf %d %d\n", len(b.Vars), len(b.Clauses))...)
+	for _, c := range b.Clauses {
 		for _, v := range c {
-			if !v.b {
+			if !v.B {
 				res = append(res, '-')
 			}
-			res = strconv.AppendInt(res, int64(v.id), 10)
+			res = strconv.AppendInt(res, int64(v.ID), 10)
 			res = append(res, ' ')
 		}
 		res = append(res, "0\n"...)
